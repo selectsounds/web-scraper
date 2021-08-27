@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import openpyxl
@@ -173,4 +174,4 @@ def get_links():
 
 
 if __name__ == '__main__':
-    enter_record()
+    enter_record(excel_file='rohan-records.xlsx')
