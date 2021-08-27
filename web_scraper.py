@@ -25,20 +25,20 @@ https://www.discogs.com/The-Bug-Feat-KillaP-Flow-Dan-Skeng/release/1067932
 
 def get_info_from_soup(soup):
     data = ['']
-    
+
     release_header = soup.find('div', id='release-header')
-    
+
     artist_tag = release_header.h1.span
     artist = artist_tag.text
     artist_tag.extract()
     data.append(artist)
-#     print(artist)
-#     info_dict['Artist'] = artist
-    
+    #     print(artist)
+    #     info_dict['Artist'] = artist
+
     title = release_header.h1.text[3:].replace(u'\xa0', u' ')
-#     print(title)
+    #     print(title)
     data.append(title)
-#     info_dict['title'] = title
+    #     info_dict['title'] = title
 
     info = release_header.find('div', class_='info_2OHV7')
 
@@ -48,29 +48,37 @@ def get_info_from_soup(soup):
     else:
         format_type = 'EP'
     data.append(format_type)
-    
+
     line_items = [div.text.split(':')[1] for div in info.find_all('div', class_='lineitem_2U49R')]
-    
+
+    print(line_items)
+
+    year = ''
+    genre = ''
     if len(line_items) == 6:
-        year = int([int(s) for s in line_items[3].split() if s.isdigit()][0])
-        genre = line_items[5]
+        if line_items[3]:
+            year = int([int(s) for s in line_items[3].split() if s.isdigit()][0])
+        if line_items[5]:
+            genre = line_items[5]
     else:
-        year = int([int(s) for s in line_items[2].split() if s.isdigit()][0])
-        genre = line_items[4]
-        
+        if line_items[2]:
+            year = int([int(s) for s in line_items[2].split() if s.isdigit()][0])
+        if line_items[4]:
+            genre = line_items[4]
+
     data.append(genre)
 
     print(line_items)
     data.append(year)
 
-    data.append('')
-    
+    data.append('G')
+
     price = float(soup.find('div', class_='items_3gMeU').find_all('span')[2].text.replace('£', ''))
     data.append(price)
-#     info_dict['Format'] = format_line
+    #     info_dict['Format'] = format_line
 
     print(data)
-    
+
     return data
 
 
@@ -86,20 +94,20 @@ def get_record_info(link, driver=None):
 def get_multiple_records_info(links):
     records_info = []
     driver = webdriver.Chrome(options=chrome_options)
-    
+
     for link in links:
         print(link)
         record_info = get_record_info(link, driver=driver)
-#         print(record_info)
+        #         print(record_info)
         records_info.append(record_info)
-        
+
     return records_info
-        
+
+
 # record_info_list = get_multiple_records_info(links)
 
 
-def append_records_to_file(records, file='test.xlsx'):
-
+def append_records_to_file(records, file='record_data/test.xlsx'):
     links_excel = openpyxl.load_workbook(file)
     links_worksheet = links_excel.active
 
@@ -111,8 +119,7 @@ def append_records_to_file(records, file='test.xlsx'):
     links_excel.close()
 
 
-
-def append_record_to_file(record, file='test.xlsx'):
+def append_record_to_file(record, file='record_data/test.xlsx'):
     links_excel = openpyxl.load_workbook(file)
     links_worksheet = links_excel.active
 
@@ -123,7 +130,6 @@ def append_record_to_file(record, file='test.xlsx'):
     links_excel.close()
 
 
-
 def get_link_from_user():
     link = input('Enter discogs link: ')
     return link
@@ -131,8 +137,12 @@ def get_link_from_user():
 
 def enter_record(excel_file='records.xlsx'):
     link = get_link_from_user()
+    if not link:
+        return
     record = get_record_info(link)
     append_record_to_file(record, file=excel_file)
+    return True
+
 
 # links_excel = openpyxl.load_workbook('PRE-OWNED STOCK.xlsx')
 # links_worksheet = links_excel.active
@@ -152,12 +162,12 @@ def enter_record(excel_file='records.xlsx'):
 
 
 def get_links():
-    links_excel = openpyxl.load_workbook('PRE-OWNED STOCK.xlsx')
+    links_excel = openpyxl.load_workbook('record_data/PRE-OWNED STOCK.xlsx')
     links_worksheet = links_excel.active
 
     names_column = links_worksheet['A']
     links_column = links_worksheet['B']
-    
+
     links = []
     for l in range(1, len(links_column)):
         if not links_column[l].value:
@@ -165,13 +175,14 @@ def get_links():
         link = links_column[l].value.replace('\n', '')
         if link[-1] == '/':
             link = link[:-1]
-            
-        if link not in links: 
+
+        if link not in links:
             links.append([names_column[l].value, link])
-    
+
     links_excel.close()
 
 
-
 if __name__ == '__main__':
-    enter_record(excel_file='rohan-records.xlsx')
+
+    while enter_record(excel_file='record_data/ivan-records.xlsx'):
+        pass
