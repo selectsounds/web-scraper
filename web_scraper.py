@@ -184,5 +184,19 @@ def get_links():
 
 if __name__ == '__main__':
 
-    while enter_record(excel_file='record_data/ivan-records.xlsx'):
+    user = input('Enter user (i = Ivan, r = Rohan, t = Test): ')
+
+    if user == 'i':
+        excel_file = 'record_data/ivan-records.xlsx'
+
+    elif user == 'r':
+        excel_file = 'record_data/rohan-records.xlsx'
+
+    elif user == 't':
+        excel_file = 'record_data/test.xlsx'
+
+    else:
+        quit()
+
+    while enter_record(excel_file=excel_file):
         pass
