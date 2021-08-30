@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
-from selenium import webdriver
+from selenium import webdriver, common
 import openpyxl
 
 chrome_options = webdriver.chrome.options.Options()
@@ -23,10 +23,30 @@ https://www.discogs.com/The-Bug-Feat-KillaP-Flow-Dan-Skeng/release/1067932
 """.split('\n')[1:-1]
 
 
+def not_record_page(soup):
+    try:
+        release_header = soup.find('div', id='release-header')
+        # if not release_header:
+
+    except AttributeError as err:
+        if str(err) != "AttributeError: 'NoneType' object has no attribute 'h1'":
+            print(f'Unknown error occurred with following log: {str(err)}')
+
+        return True
+
+    except Exception as err:
+        print(f'Unknown error occurred with following log: {str(err)}')
+        return True
+
+
 def get_info_from_soup(soup):
     data = ['']
 
     release_header = soup.find('div', id='release-header')
+
+    if not release_header:
+        print('Could not find information on page. Are you sure it is a record page? Might want to check again mate')
+        return
 
     artist_tag = release_header.h1.span
     artist = artist_tag.text
@@ -85,7 +105,12 @@ def get_info_from_soup(soup):
 def get_record_info(link, driver=None):
     if not driver:
         driver = webdriver.Chrome(options=chrome_options)
-    driver.get(link)
+    try:
+        driver.get(link)
+    except common.exceptions.InvalidArgumentException as err:
+        print(f'Invalid link entered: {link}')
+        return
+
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     soup_info = get_info_from_soup(soup)
     return soup_info
@@ -139,7 +164,10 @@ def enter_record(excel_file='records.xlsx'):
     link = get_link_from_user()
     if not link:
         return
+
     record = get_record_info(link)
+    if not record:
+        return True
     append_record_to_file(record, file=excel_file)
     return True
 
